@@ -13,6 +13,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using REST_API_ProiectUTCN.Models;
+using System.IO;
+using System.Reflection;
 
 namespace REST_API_ProiectUTCN
 {
@@ -34,8 +36,26 @@ namespace REST_API_ProiectUTCN
             services.AddDbContext<MessageContext>(opt => opt.UseInMemoryDatabase("Messages"));
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "REST_API_ProiectUTCN", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "REST_API_ProiectUTCN",
+                    Description = "ASP.NET Core Web API for UTCN Project",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Flesar Radu",
+                        Email = "flesarradu@gmail.com",
+                        Url = new Uri("https://github.com/flesarradu")
+                    }
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
             });
+           
+
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,7 +65,11 @@ namespace REST_API_ProiectUTCN
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "REST_API_ProiectUTCN v1"));
+                app.UseSwaggerUI(c => 
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "REST_API_ProiectUTCN v1");
+                    c.RoutePrefix = string.Empty;
+                });
             }
 
             app.UseHttpsRedirection();
