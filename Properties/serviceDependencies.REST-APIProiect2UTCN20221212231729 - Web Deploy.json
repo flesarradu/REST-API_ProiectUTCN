@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "apis1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/REST-APIProiectUTCNapi2/apis/REST-APIProiectUTCN2",
+      "type": "apis.azure"
+    }
+  }
+}

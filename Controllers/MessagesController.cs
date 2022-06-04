@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -18,35 +18,45 @@ namespace REST_API_ProiectUTCN.Controllers
     public class MessagesController : ControllerBase
     {
         private readonly MessageContext _context;
-        
+
 
         public MessagesController(MessageContext context)
         {
             _context = context;
 
-            var x = getMessagesJson();
-            x.Wait();
-            
+            if (!context.Messages.Any())
+            {
+                var x = GetMessagesJson();
+                x.Wait();
+            }
 
         }
 
-        private async Task getMessagesJson()
+        private async Task GetMessagesJson()
         {
-            var filepath = Path.Combine(System.IO.Directory.GetCurrentDirectory(),"json");
-            var d = new DirectoryInfo(filepath);
-
-            foreach (var file in d.GetFiles("*.json"))
+            try
             {
-                var file1 = new FileStream(file.FullName, FileMode.Open);
-                var x = await System.Text.Json.JsonSerializer.DeserializeAsync<IEnumerable<Message>>(file1);
-                foreach (var message in x)
-                { 
-                    if(!MessageExists(message.Id))
-                        await _context.Messages.AddAsync(message);
+                var filepath = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "json");
+                var d = new DirectoryInfo(filepath);
+
+                foreach (var file in d.GetFiles("*.json"))
+                {
+                    var file1 = new FileStream(file.FullName, FileMode.Open);
+                    var x = await System.Text.Json.JsonSerializer.DeserializeAsync<IEnumerable<Message>>(file1);
+                    foreach (var message in x)
+                    {
+                        if (!MessageExists(message.Id))
+                            await _context.Messages.AddAsync(message);
+                    }
+
+                    file1.Close();
                 }
-                file1.Close();
+
+                await _context.SaveChangesAsync();
             }
-            await _context.SaveChangesAsync();
+            catch{
+                Console.WriteLine("error");
+            }
         }
 
         // GET: api/Messages
@@ -60,7 +70,8 @@ namespace REST_API_ProiectUTCN.Controllers
         [HttpGet("{user}/{id}")]
         public async Task<IEnumerable<Message>> GetMessage(string user, long id)
         {
-            return await _context.Messages.Where(x=>x.User==user && x.Id>id).ToListAsync();
+            return await _context.Messages.Where(x => (x.Id == id && x.User == user)).ToListAsync();
+            
         }
         // GET: api/Messages/paul
         [HttpGet("{user}")]
@@ -105,16 +116,23 @@ namespace REST_API_ProiectUTCN.Controllers
         [HttpPost]
         public async Task<ActionResult<Message>> PostMessage(Message message)
         {
+            _context.Messages.Add(message);
+            await _context.SaveChangesAsync();
+
             //Save in json file
             string jsonString = JsonConvert.SerializeObject(message);
             if (jsonString != "")
             {
                 string fileName = $"{System.IO.Directory.GetCurrentDirectory()}\\json\\{message.User + ".json"}";
-                System.IO.File.AppendAllText(fileName, '\n' + jsonString);
+
+                var file1 = new FileStream(fileName, FileMode.Open);
+                jsonString = JsonConvert.SerializeObject(await _context.Messages.ToListAsync());
+                await System.IO.File.WriteAllTextAsync(fileName, jsonString);
+                file1.Close();
             }
-            _context.Messages.Add(message);
             
-            await _context.SaveChangesAsync();
+            
+            
 
             return CreatedAtAction("GetMessage", new { id = message.Id }, message);
         }

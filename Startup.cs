@@ -31,9 +31,8 @@ namespace REST_API_ProiectUTCN
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers();
-
             services.AddDbContext<MessageContext>(opt => opt.UseInMemoryDatabase("Messages"));
+            services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
@@ -46,6 +45,11 @@ namespace REST_API_ProiectUTCN
                         Name = "Flesar Radu",
                         Email = "flesarradu@gmail.com",
                         Url = new Uri("https://github.com/flesarradu")
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "Use under License",
+                        Url = new Uri("https://example.com/license"),
                     }
                 });
 
