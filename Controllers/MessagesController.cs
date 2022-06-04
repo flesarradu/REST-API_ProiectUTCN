@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -110,7 +110,13 @@ namespace REST_API_ProiectUTCN.Controllers
             if (jsonString != "")
             {
                 string fileName = $"{System.IO.Directory.GetCurrentDirectory()}\\json\\{message.User + ".json"}";
-                System.IO.File.AppendAllText(fileName, '\n' + jsonString);
+
+                var file1 = new FileStream(fileName, FileMode.Open);
+                var userMessages = (await System.Text.Json.JsonSerializer.DeserializeAsync<IEnumerable<Message>>(file1)).ToList();
+                userMessages.Add(message);
+
+                jsonString = JsonConvert.SerializeObject(userMessages);
+                System.IO.File.WriteAllText(fileName, jsonString);
             }
             _context.Messages.Add(message);
             
