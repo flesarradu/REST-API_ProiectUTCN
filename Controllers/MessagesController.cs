@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Text.Json;
 using System.IO;
 using REST_API_ProiectUTCN.Models;
 
@@ -17,31 +18,54 @@ namespace REST_API_ProiectUTCN.Controllers
     public class MessagesController : ControllerBase
     {
         private readonly MessageContext _context;
+        
 
         public MessagesController(MessageContext context)
         {
             _context = context;
+
+            var x = getMessagesJson();
+            x.Wait();
+            
+
+        }
+
+        private async Task getMessagesJson()
+        {
+            var filepath = Path.Combine(System.IO.Directory.GetCurrentDirectory(),"json");
+            var d = new DirectoryInfo(filepath);
+
+            foreach (var file in d.GetFiles("*.json"))
+            {
+                var file1 = new FileStream(file.FullName, FileMode.Open);
+                var x = await System.Text.Json.JsonSerializer.DeserializeAsync<IEnumerable<Message>>(file1);
+                foreach (var message in x)
+                { 
+                    await _context.Messages.AddAsync(message);
+                }
+                file1.Close();
+            }
+            await _context.SaveChangesAsync();
         }
 
         // GET: api/Messages
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Message>>> GetMessages()
         {
-            return await _context.Messages.ToListAsync();
+            return await this._context.Messages.ToListAsync();
         }
 
-        // GET: api/Messages/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Message>> GetMessage(long id)
+        // GET: api/Messages/paul/5
+        [HttpGet("{user}/{id}")]
+        public async Task<IEnumerable<Message>> GetMessage(string user, long id)
         {
-            var message = await _context.Messages.FindAsync(id);
-
-            if (message == null)
-            {
-                return NotFound();
-            }
-
-            return message;
+            return await _context.Messages.Where(x=>x.User==user && x.Id>id).ToListAsync();
+        }
+        // GET: api/Messages/paul
+        [HttpGet("{user}")]
+        public async Task<IEnumerable<Message>> GetMessage(string user)
+        {
+            return await _context.Messages.Where(x=>x.User == user).ToListAsync();
         }
 
         // PUT: api/Messages/5
@@ -88,6 +112,7 @@ namespace REST_API_ProiectUTCN.Controllers
                 System.IO.File.AppendAllText(fileName, '\n' + jsonString);
             }
             _context.Messages.Add(message);
+            
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetMessage", new { id = message.Id }, message);
