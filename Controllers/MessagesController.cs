@@ -41,7 +41,8 @@ namespace REST_API_ProiectUTCN.Controllers
                 var x = await System.Text.Json.JsonSerializer.DeserializeAsync<IEnumerable<Message>>(file1);
                 foreach (var message in x)
                 { 
-                    await _context.Messages.AddAsync(message);
+                    if(!MessageExists(message.Id))
+                        await _context.Messages.AddAsync(message);
                 }
                 file1.Close();
             }
