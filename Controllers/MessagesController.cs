@@ -33,7 +33,10 @@ namespace REST_API_ProiectUTCN.Controllers
         private async Task getMessagesJson()
         {
             var filepath = Path.Combine(System.IO.Directory.GetCurrentDirectory(),"json");
+            
             var d = new DirectoryInfo(filepath);
+            
+            Debug.WrileLine("DEBUGGER FLESAR: "+ filepath + " " + d);
 
             foreach (var file in d.GetFiles("*.json"))
             {
