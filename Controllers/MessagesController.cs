@@ -18,6 +18,7 @@ namespace REST_API_ProiectUTCN.Controllers
     public class MessagesController : ControllerBase
     {
         private readonly MessageContext _context;
+        
 
 
         public MessagesController(MessageContext context)
@@ -117,6 +118,7 @@ namespace REST_API_ProiectUTCN.Controllers
         public async Task<ActionResult<Message>> PostMessage(Message message)
         {
             _context.Messages.Add(message);
+
             await _context.SaveChangesAsync();
 
             //Save in json file

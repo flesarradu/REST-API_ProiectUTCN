@@ -30,7 +30,7 @@ namespace REST_API_ProiectUTCN
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddDbContext<AppUserContext>(opt => opt.UseInMemoryDatabase("AppUsers"));
             services.AddDbContext<MessageContext>(opt => opt.UseInMemoryDatabase("Messages"));
             services.AddControllers();
             services.AddSwaggerGen(c =>
