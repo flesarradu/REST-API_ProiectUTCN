@@ -64,6 +64,8 @@ namespace REST_API_ProiectUTCN.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Message>>> GetMessages()
         {
+            var x = GetMessagesJson();
+            x.Wait();
             return await this._context.Messages.ToListAsync();
         }
 
